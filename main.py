@@ -27,22 +27,24 @@ st.subheader(f"{option} for {place} for the next {days} days")
 
 if place:
     filtered_data = backend.get_data(place, days)
+    if filtered_data is None:
+        st.error(f"Sorry, no weather data found for '{place}'. Please check the city name and try again.")
+    else:
+        if option == "Temperature":
+            temperatures = [dict["main"]["temp"] / 10 for dict in filtered_data]
+            dates = [dict["dt_txt"] for dict in filtered_data]
+            figure = px.line(x=dates, y=temperatures, labels={'x': 'Date', 'y': 'Temperature (°C)'})
+            st.plotly_chart(figure, use_container_width=True)
 
-    if option == "Temperature":
-        temperatures = [dict["main"]["temp"] / 10 for dict in filtered_data]
-        dates = [dict["dt_txt"] for dict in filtered_data]
-        figure = px.line(x=dates, y=temperatures, labels={'x': 'Date', 'y': 'Temperature (°C)'})
-        st.plotly_chart(figure, use_container_width=True)
+        if option == "Sky":
+            imagesDic = {
+                        "Clear": f"{SCRIPT_DIR}/images/clear.png",
+                        "Clouds": f"{SCRIPT_DIR}/images/cloud.png",
+                        "Rain": f"{SCRIPT_DIR}/images/rain.png",
+                        "Snow": f"{SCRIPT_DIR}/images/snow.png"
+                        }
+            
+            sky_condtitions = [dict["weather"][0]["main"] for dict in filtered_data]
+            image_paths = [imagesDic[condition] for condition in sky_condtitions]
 
-    if option == "Sky":
-        imagesDic = {
-                    "Clear": f"{SCRIPT_DIR}/images/clear.png",
-                    "Clouds": f"{SCRIPT_DIR}/images/cloud.png",
-                    "Rain": f"{SCRIPT_DIR}/images/rain.png",
-                    "Snow": f"{SCRIPT_DIR}/images/snow.png"
-                    }
-        
-        sky_condtitions = [dict["weather"][0]["main"] for dict in filtered_data]
-        image_paths = [imagesDic[condition] for condition in sky_condtitions]
-
-        st.image(image_paths, width=100, caption=sky_condtitions)
+            st.image(image_paths, width=100, caption=sky_condtitions)

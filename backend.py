@@ -7,13 +7,17 @@ def get_data(city, forecast_days=None):
 
     api_key = os.getenv("OPENWEATHERMAP_API_KEY")
     url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}"
-    
-    response = requests.get(url)
-    data = response.json()
-    number_values = 8 * int(forecast_days) if forecast_days != None else 40
-    filtered_data = data['list'][:number_values]
-
-    return filtered_data
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        if data.get('cod') != '200':
+            return None
+        number_values = 8 * int(forecast_days) if forecast_days is not None else 40
+        filtered_data = data['list'][:number_values]
+        return filtered_data
+    except Exception:
+        return None
 
 
 if __name__ == "__main__":
